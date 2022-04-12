@@ -51,7 +51,7 @@ public:
 		~node(){delete val;}
 	};
 	int Capacity;
-	const double LoadFactor;
+	const double LoadFactor=2.0,LoadFactor2=0.5;
 	node **Point;
 	node *Fir,*Las;
 	int Size;
@@ -226,11 +226,11 @@ public:
 	/**
 	 * TODO two constructors
 	 */
-	linked_hashmap() :LoadFactor(2.0),Capacity(10),Fir(nullptr),Las(nullptr),Size(0){
+	linked_hashmap() :Capacity(10),Fir(nullptr),Las(nullptr),Size(0){
 		Point=new node*[Capacity];
 		for(int i=0;i<Capacity;i++)Point[i]=nullptr;
 	}
-	linked_hashmap(const linked_hashmap &other) :LoadFactor(1.0){
+	linked_hashmap(const linked_hashmap &other){
 		Capacity=other.Capacity,Size=other.Size;
 		Point=new node*[Capacity];
 		node **Point_las=new node*[Capacity];
@@ -401,6 +401,22 @@ public:
 		}
 		delete[] Point_las;
 	}
+	void DivSpace(){
+		delete[] Point;
+		Capacity>>=1;
+		Point=new node*[Capacity];
+		node **Point_las=new node*[Capacity];
+		for(int i=0;i<Capacity;i++)Point[i]=nullptr;
+		for(int i=0;i<Capacity;i++)Point_las[i]=nullptr;
+		for(node *x=Fir,*y=nullptr,*z;x!=nullptr;x=x->time_next){
+			int H=Hash()(x->val->first)%Capacity;
+			x->pre=x->next=nullptr;
+			if(Point_las[H]==nullptr)Point[H]=x;
+			else Point_las[H]->next=x,x->pre=Point_las[H];
+			Point_las[H]=x;
+		}
+		delete[] Point_las;
+	}
 	pair<iterator, bool> insert(const value_type &value) {
 		if(Size>Capacity*LoadFactor)DoubleSpace();
 
@@ -429,6 +445,8 @@ public:
 	 * throw if pos pointed to a bad element (pos == this->end() || pos points an element out of this)
 	 */
 	void erase(iterator pos) {
+		if(Size>10&&Size<Capacity*LoadFactor2)DivSpace();
+
 		if(pos.Belongs!=this||pos==end())throw invalid_iterator();
 		node *x=pos.p;
 		if(x->pre!=nullptr)x->pre->next=x->next;
