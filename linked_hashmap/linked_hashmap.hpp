@@ -51,7 +51,7 @@ public:
 		~node(){delete val;}
 	};
 	int Capacity;
-	const double LoadFactor=2.0,LoadFactor2=0.5;
+	const double LoadFactor=0.75,LoadFactor2=0.25;
 	node **Point;
 	node *Fir,*Las;
 	int Size;
